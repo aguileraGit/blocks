@@ -1,4 +1,4 @@
-import cq
+import cadquery as cq
 
 class blockTemplate:
     def __init__(self, description=None, workplane=None, part=None):
@@ -46,9 +46,8 @@ class blkLibrary:
         #List of all pre-made blocks. Will be generated later.
         self.defaultBlocks = [self.prtFnLargeCircle(),
                               #self.prtFnSemiCircleLarge(),
-                              self.prtFnQuarterCircleLarge()
+                              #self.prtFnQuarterCircleLarge()
                              ]
-
 
         #Generate the base
         self.generateBaseBlock()
