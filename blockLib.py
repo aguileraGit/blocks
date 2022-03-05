@@ -44,9 +44,9 @@ class blkLibrary:
 
 
         #List of all pre-made blocks. Will be generated later.
-        self.defaultBlocks = [self.prtFnLargeCircle(),
-                              #self.prtFnSemiCircleLarge(),
-                              #self.prtFnQuarterCircleLarge()
+        self.defaultBlocks = [self.prtFnLargeCircle,
+                              #self.prtFnSemiCircleLarge,
+                              #self.prtFnQuarterCircleLarge
                              ]
 
         #Generate the base
