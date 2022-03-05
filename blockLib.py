@@ -35,12 +35,11 @@ class blkLibrary:
         #List of all blocks generate
         self.blockList = []
 
-        '''
-        self.baseBlock = {'fn': self.prtBaseBlock,
-                          'description': 'Base 5x4 block',
+        self.baseWorkplane = None
+        self.basePart = None
+        self.baseBlock = {'description': 'Base 5x4 block',
                           'workplane': self.baseWorkplane,
-                          'part': self.basepart}
-        '''
+                          'part': self.basePart}
 
 
         #List of all pre-made blocks. Will be generated later.
@@ -59,12 +58,20 @@ class blkLibrary:
     #Create Base Block to be used later on for all parts
     def generateBaseBlock(self):
         #Create workplane
+        self.baseWorkplane = cq.Workplane("XY").rect(self.baseWidth,
+                             self.baseWidth, centered=False)
+
         #Extrude workplane
-        pass
+        self.basePart =
 
 
     #Takes a 2D workplane and returns a 3D part. Intended to be used with Top.
-    def generateTop(self, workplane): #, height=self.topHeight
+    def generateTop(self, workplane, height=None):
+        if height == None:
+            height = self.topHeight
+
+        toReturn = workplane.extrude(height)
+
         #returns part
         pass
 
@@ -82,7 +89,6 @@ class blkLibrary:
 
 
     def prtFnLargeCircle(self):
-        print('Large Circle')
         self.partLargeCircle = blockTemplate()
         self.partLargeCircle.description = 'Large Circle'
 
