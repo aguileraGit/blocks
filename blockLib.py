@@ -1,21 +1,24 @@
 import cadquery as cq
 
 class blockTemplate:
-    def __init__(self, description=None, workplane=None, part=None):
+    def __init__(self, name=None, description=None, workplane=None, part=None):
+        self.name = None
+        if name != None:
+            self.name = name
+
         self.description = None
         if description != None:
             self.description = description
 
+        #Technically a workplan on a block the way the code is written
         self.workplane = None
         if workplane != None:
             self.workplane = workplane
 
-        self.part = None
+        self.block = None
         if part != None:
             self.part = part
 
-        self.top = None
-        self.block = None
 
 
 class blkLibrary:
@@ -48,8 +51,10 @@ class blkLibrary:
                               #self.prtFnQuarterCircleLarge
                              ]
 
+        self.blocks = []
+
         #Generate the base
-        self.generateBaseBlock()
+        self.baseWorkplane, self.basePart = self.generateBaseBlock()
 
         #Generate pre-made blocks
         for blk in self.defaultBlocks:
@@ -58,11 +63,13 @@ class blkLibrary:
     #Create Base Block to be used later on for all parts
     def generateBaseBlock(self):
         #Create workplane
-        self.baseWorkplane = cq.Workplane("XY").rect(self.baseWidth,
+        baseWorkplane = cq.Workplane("XY").rect(self.baseWidth,
                              self.baseWidth, centered=False)
 
         #Extrude workplane
-        self.basePart =
+        basePart = baseWorkplane.extrude(self.baseHeight)
+
+        return baseWorkplane, basePart
 
 
     #Takes a 2D workplane and returns a 3D part. Intended to be used with Top.
@@ -72,13 +79,13 @@ class blkLibrary:
 
         toReturn = workplane.extrude(height)
 
-        #returns part
-        pass
+        return toReturn
 
 
     #Combines 3D Top and Base.
     def generatePart(self, TopPart, fillet=True): # base=self.basepart['part'],
 
+        #Need to figure out how to combine both top and bottom pieces
         if fillet:
             self.filletPart()
         pass
@@ -88,12 +95,29 @@ class blkLibrary:
         pass
 
 
+    def exportToSTL(self, part):
+        cq.exporters.export(part.block, (str(part.name)+'.stl') )
+
+
     def prtFnLargeCircle(self):
         self.partLargeCircle = blockTemplate()
-        self.partLargeCircle.description = 'Large Circle'
+        self.partLargeCircle.name = 'Large Circle'
+        self.partLargeCircle.description = 'Large circle as big as the block'
 
-        self.partLargeCircle.workplane = cq.Workplane("XY").center( (self.baseWidth/2),(self.baseWidth/2) ).circle(self.baseWidth)
+        #Clone base part
+        unUsedPlane, self.partLargeCircle.block = self.generateBaseBlock()
 
+        #Create Workplane on Top (Z) face
+        self.partLargeCircle.workplane = self.partLargeCircle.block.faces(">Z").workplane().center( (self.baseWidth/2),(self.baseWidth/2) ).circle(self.baseWidth/2)
+
+        #Extrude Part
+        self.partLargeCircle.block = self.partLargeCircle.workplane.extrude(self.topHeight)
+
+        #Fillet
+        #self.partLargeCircle.block = self.filletPart(self.partLargeCircle.block)
+
+        #Add to list of blocks
+        self.blocks.append(self.partLargeCircle)
 
     def prtFnSemiCircleLarge(self):
         self.partSemiCircleLarge = blockTemplate()
@@ -110,3 +134,9 @@ class blkLibrary:
         self.partSemiCircleLarge.part = self.generatePart(self.partSemiCircleLarge.top)
 
 blk = blkLibrary()
+
+print(blk.blocks)
+
+for _blk in blk.blocks:
+    print(_blk.name)
+    blk.exportToSTL(_blk)
