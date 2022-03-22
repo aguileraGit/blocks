@@ -40,6 +40,9 @@ class blkLibrary:
 
         self.baseWorkplane = None
         self.basePart = None
+        self.baseFilletZ = 0.125
+        self.baseFilletX = 0.075
+
         self.baseBlock = {'description': 'Base 5x4 block',
                           'workplane': self.baseWorkplane,
                           'part': self.basePart}
@@ -47,18 +50,19 @@ class blkLibrary:
 
         #List of all pre-made blocks. Will be generated later.
         self.defaultBlocks = [self.prtFnLargeCircle,
-                              #self.prtFnSemiCircleLarge,
+                              self.prtFnLargeArc,
                               #self.prtFnQuarterCircleLarge
                              ]
 
-        self.blocks = []
+        self.blocks = {}
 
         #Generate the base
-        self.baseWorkplane, self.basePart = self.generateBaseBlock()
+        self.basePart = self.generateBaseBlock()
 
         #Generate pre-made blocks
         for blk in self.defaultBlocks:
             blk()
+
 
     #Create Base Block to be used later on for all parts
     def generateBaseBlock(self):
@@ -67,9 +71,11 @@ class blkLibrary:
                              self.baseWidth, centered=False)
 
         #Extrude workplane
-        basePart = baseWorkplane.extrude(self.baseHeight)
+        basePart = baseWorkplane.extrude(self.baseHeight).faces("<Z").shell(-0.4)
+        basePart = basePart.edges("|Z").fillet(self.baseFilletZ)
+        basePart = basePart.edges(">Z").fillet(self.baseFilletX)
 
-        return baseWorkplane, basePart
+        return basePart
 
 
     #Takes a 2D workplane and returns a 3D part. Intended to be used with Top.
@@ -105,38 +111,54 @@ class blkLibrary:
         self.partLargeCircle.description = 'Large circle as big as the block'
 
         #Clone base part
-        unUsedPlane, self.partLargeCircle.block = self.generateBaseBlock()
+        self.partLargeCircle.block = self.generateBaseBlock()
 
         #Create Workplane on Top (Z) face
-        self.partLargeCircle.workplane = self.partLargeCircle.block.faces(">Z").workplane().center( (self.baseWidth/2),(self.baseWidth/2) ).circle(self.baseWidth/2)
+        #Center on Z plane
+        #Draw circle
+        self.partLargeCircle.workplane = self.partLargeCircle.block.faces(">Z").workplane()\
+            .center( (self.baseWidth/2),(self.baseWidth/2) )\
+            .circle(self.baseWidth/2)
 
         #Extrude Part
-        self.partLargeCircle.block = self.partLargeCircle.workplane.extrude(self.topHeight)
-
-        #Fillet
-        #self.partLargeCircle.block = self.filletPart(self.partLargeCircle.block)
+        #Fillet further most Z plane
+        self.partLargeCircle.block = self.partLargeCircle.workplane.extrude(1.0)\
+            .edges(">Z").fillet(0.05)
 
         #Add to list of blocks
-        self.blocks.append(self.partLargeCircle)
+        self.blocks['block'] = self.partLargeCircle
 
-    def prtFnSemiCircleLarge(self):
-        self.partSemiCircleLarge = blockTemplate()
-        self.partSemiCircleLarge.description = 'Large Semi Circle'
-        #Add to blockList? What to add?
+    def prtFnLargeArc(self):
+        self.partLargeArc = blockTemplate()
+        self.partLargeArc.name = 'Large Arc'
+        self.partLargeArc.description = 'Arc as large as the block'
 
-        #2D stuff here
-        self.partSemiCircleLarge.workplane = 'Code For Workplane'
+        #Clone base part
+        self.partLargeArc.block = self.generateBaseBlock()
 
-        #3D stuff here - Only top part
-        self.partSemiCircleLarge.top = self.generateTop(self.partSemiCircleLarge.workplane)
+        #Create Workplane on Top (Z) face
+        self.partLargeArc.workplane = self.partLargeCircle.block.faces(">Z").workplane()\
+            .lineTo(5.0, 0)\
+            .lineTo(5.0, 1.0)\
+            .radiusArc((1.0, 5.0), -4)\
+            .lineTo(0, 5.0)\
+            .close()
 
-        #Combine top and base - Adds fillets
-        self.partSemiCircleLarge.part = self.generatePart(self.partSemiCircleLarge.top)
+        #Extrude Part
+        self.partLargeArc.block = self.partLargeArc.workplane.extrude(1.0)\
+            .edges("|Z").fillet(0.1)\
+            .edges(">Z").fillet(0.05)
+
+        #Add to list of blocks
+        self.blocks['block'] = self.partLargeArc
+
 
 blk = blkLibrary()
 
-print(blk.blocks)
+print(blk.blocks['block'].name)
 
-for _blk in blk.blocks:
-    print(_blk.name)
-    blk.exportToSTL(_blk)
+for key,value in blk.blocks.items():
+    print(key, value.name)
+    print(key, value.description)
+
+    blk.exportToSTL(value)
