@@ -56,11 +56,12 @@ class blkLibrary:
                               self.prtFnLargeArc,
                              ]
 
-        self.blocks = {}
+        self.blocks = []
 
         #Generate pre-made blocks
         for blk in self.defaultBlocks:
             blk()
+            print('Added Block: ' + str(blk))
 
 
     #Create Base Block to be used later on for all parts
@@ -125,7 +126,7 @@ class blkLibrary:
             .edges(">Z").fillet(0.05)
 
         #Add to list of blocks
-        self.blocks['block'] = self.partLargeCircle
+        self.blocks.append( {'block': self.partLargeCircle} )
 
 
     def prtFnLargeArc(self):
@@ -150,15 +151,12 @@ class blkLibrary:
             .edges(">Z").fillet(0.05)
 
         #Add to list of blocks
-        self.blocks['block'] = self.partLargeArc
+        self.blocks.append( {'block': self.partLargeArc} )
 
 
 blk = blkLibrary()
 
-print(blk.blocks['block'].name)
 
-for key,value in blk.blocks.items():
-    print(key, value.name)
-    print(key, value.description)
-
-    blk.exportToSTL(value)
+for block in blk.blocks:
+    print( block['block'].name)
+    blk.exportToSTL(block['block'])
