@@ -47,17 +47,16 @@ class blkLibrary:
                           'workplane': self.baseWorkplane,
                           'part': self.basePart}
 
+        #Generate the base
+        self.basePart = self.generateBaseBlock()
+
 
         #List of all pre-made blocks. Will be generated later.
         self.defaultBlocks = [self.prtFnLargeCircle,
                               self.prtFnLargeArc,
-                              #self.prtFnQuarterCircleLarge
                              ]
 
         self.blocks = {}
-
-        #Generate the base
-        self.basePart = self.generateBaseBlock()
 
         #Generate pre-made blocks
         for blk in self.defaultBlocks:
@@ -128,6 +127,7 @@ class blkLibrary:
         #Add to list of blocks
         self.blocks['block'] = self.partLargeCircle
 
+
     def prtFnLargeArc(self):
         self.partLargeArc = blockTemplate()
         self.partLargeArc.name = 'Large Arc'
@@ -137,7 +137,7 @@ class blkLibrary:
         self.partLargeArc.block = self.generateBaseBlock()
 
         #Create Workplane on Top (Z) face
-        self.partLargeArc.workplane = self.partLargeCircle.block.faces(">Z").workplane()\
+        self.partLargeArc.workplane = self.partLargeArc.block.faces(">Z").workplane()\
             .lineTo(5.0, 0)\
             .lineTo(5.0, 1.0)\
             .radiusArc((1.0, 5.0), -4)\
