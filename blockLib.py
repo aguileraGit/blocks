@@ -54,6 +54,8 @@ class blkLibrary:
         #List of all pre-made blocks. Will be generated later.
         self.defaultBlocks = [self.prtFnLargeCircle,
                               self.prtFnLargeArc,
+                              self.prtFnSmallArc,
+                              self.partFnRect3x5Cen
                              ]
 
         self.blocks = []
@@ -78,29 +80,6 @@ class blkLibrary:
         return basePart
 
 
-    #Takes a 2D workplane and returns a 3D part. Intended to be used with Top.
-    def generateTop(self, workplane, height=None):
-        if height == None:
-            height = self.topHeight
-
-        toReturn = workplane.extrude(height)
-
-        return toReturn
-
-
-    #Combines 3D Top and Base.
-    def generatePart(self, TopPart, fillet=True): # base=self.basepart['part'],
-
-        #Need to figure out how to combine both top and bottom pieces
-        if fillet:
-            self.filletPart()
-        pass
-
-
-    def filletPart(self): #, radius=self.filletRadius
-        pass
-
-
     def exportToSTL(self, part):
         cq.exporters.export(part.block, (str(part.name)+'.stl') )
 
@@ -122,7 +101,7 @@ class blkLibrary:
 
         #Extrude Part
         #Fillet further most Z plane
-        self.partLargeCircle.block = self.partLargeCircle.workplane.extrude(1.0)\
+        self.partLargeCircle.block = self.partLargeCircle.workplane.extrude(self.topHeight)\
             .edges(">Z").fillet(0.05)
 
         #Add to list of blocks
@@ -152,6 +131,42 @@ class blkLibrary:
 
         #Add to list of blocks
         self.blocks.append( {'block': self.partLargeArc} )
+
+    def prtFnSmallArc(self):
+        self.partSmallArc = blockTemplate()
+        self.partSmallArc.name = 'Small Arc'
+        self.partSmallArc.description = 'Smaller Arc - 2/3 width'
+
+        self.partSmallArc.block = self.generateBaseBlock()
+
+        self.partSmallArc.workplane = self.partSmallArc.block.faces(">Z").workplane()\
+            .lineTo(4.0, 0)\
+            .lineTo(4.0, 1.0)\
+            .radiusArc((1.0, 4.0), -3)\
+            .lineTo(0, 4.0)\
+            .close()
+
+        self.partSmallArc.block = self.partSmallArc.workplane.extrude(self.topHeight)\
+            .edges(">Z").fillet(0.01)
+
+        self.blocks.append( {'block': self.partSmallArc} )
+
+    def partFnRect3x5Cen(self):
+        self.partRect3x5 = blockTemplate()
+        self.partRect3x5.name = '3x5 Rectangle Centered'
+        self.partRect3x5.description = '3x5 Rectangle Centered in the middle'
+
+        self.partRect3x5.block = self.generateBaseBlock()
+
+        self.partRect3x5.workplane = self.partRect3x5.block.faces(">Z").workplane()\
+            .moveTo(2.5, 2.5)\
+            .rect(1.5, 5.0)
+
+        self.partRect3x5.block = self.partRect3x5.workplane.extrude(1.0)\
+            .edges("|Z").fillet(0.01)\
+            .edges(">Z").fillet(0.01)
+
+        self.blocks.append( {'block': self.partRect3x5} )
 
 
 blk = blkLibrary()
