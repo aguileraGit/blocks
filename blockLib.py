@@ -33,7 +33,6 @@ class blkLibrary:
         self.baseWidth = 5.0
         self.baseHeight = 4.0
         self.topHeight = 1.0
-        self.filletRadius = 0.1
 
         #List of all blocks generate
         self.blockList = []
@@ -55,7 +54,12 @@ class blkLibrary:
         self.defaultBlocks = [self.prtFnLargeCircle,
                               self.prtFnLargeArc,
                               self.prtFnSmallArc,
-                              self.partFnRect3x5Cen
+                              self.prtFnRect3x5Cen,
+                              self.prtFnRect1x5Cen,
+                              self.prtFnRect1x5,
+                              self.prtSrq3x3Cen,
+                              self.partMedBend,
+                              self.partLargeBend
                              ]
 
         self.blocks = []
@@ -102,11 +106,10 @@ class blkLibrary:
         #Extrude Part
         #Fillet further most Z plane
         self.partLargeCircle.block = self.partLargeCircle.workplane.extrude(self.topHeight)\
-            .edges(">Z").fillet(0.05)
+            .edges(">Z").fillet(self.baseFilletX)
 
         #Add to list of blocks
         self.blocks.append( {'block': self.partLargeCircle} )
-
 
     def prtFnLargeArc(self):
         self.partLargeArc = blockTemplate()
@@ -126,8 +129,8 @@ class blkLibrary:
 
         #Extrude Part
         self.partLargeArc.block = self.partLargeArc.workplane.extrude(1.0)\
-            .edges("|Z").fillet(0.1)\
-            .edges(">Z").fillet(0.05)
+            .edges("|Z").fillet(self.baseFilletZ)\
+            .edges(">Z").fillet(self.baseFilletX)
 
         #Add to list of blocks
         self.blocks.append( {'block': self.partLargeArc} )
@@ -147,11 +150,11 @@ class blkLibrary:
             .close()
 
         self.partSmallArc.block = self.partSmallArc.workplane.extrude(self.topHeight)\
-            .edges(">Z").fillet(0.01)
+            .edges(">Z").fillet(self.baseFilletX)
 
         self.blocks.append( {'block': self.partSmallArc} )
 
-    def partFnRect3x5Cen(self):
+    def prtFnRect3x5Cen(self):
         self.partRect3x5 = blockTemplate()
         self.partRect3x5.name = '3x5 Rectangle Centered'
         self.partRect3x5.description = '3x5 Rectangle Centered in the middle'
@@ -162,11 +165,114 @@ class blkLibrary:
             .moveTo(2.5, 2.5)\
             .rect(1.5, 5.0)
 
-        self.partRect3x5.block = self.partRect3x5.workplane.extrude(1.0)\
-            .edges("|Z").fillet(0.01)\
-            .edges(">Z").fillet(0.01)
+        self.partRect3x5.block = self.partRect3x5.workplane.extrude(self.topHeight)\
+            .edges("|Z").fillet(self.baseFilletX)\
+            .edges(">Z").fillet(self.baseFilletX)
 
         self.blocks.append( {'block': self.partRect3x5} )
+
+    def prtFnRect1x5Cen(self):
+        self.partRect1x5Cen = blockTemplate()
+        self.partRect1x5Cen.name = '1x5 Rectangle Centered'
+        self.partRect1x5Cen.description = '1x5 Rectangle Centered in the middel'
+
+        self.partRect1x5Cen.block = self.generateBaseBlock()
+
+        self.partRect1x5Cen.workplane = self.partRect1x5Cen.block.faces(">Z").workplane()\
+            .moveTo(2.5, 2.5)\
+            .rect(1, 5.0)
+
+        self.partRect1x5Cen.block = self.partRect1x5Cen.workplane.extrude(self.topHeight)\
+            .edges("|Z").fillet(self.baseFilletX)\
+            .edges(">Z").fillet(self.baseFilletX)
+
+        self.blocks.append( {'block': self.partRect1x5Cen} )
+
+    def prtFnRect1x5(self):
+        self.partRect1x5 = blockTemplate()
+        self.partRect1x5.name = '1x5 Rectangle off centered'
+        self.partRect1x5.description = '1x5 Rectangle off centered'
+
+        self.partRect1x5.block = self.generateBaseBlock()
+
+        self.partRect1x5.workplane = self.partRect1x5.block.faces("Z").workplane()\
+            .moveTo(3.5, 2.5)\
+            .rect(1, 5)
+
+        self.partRect1x5.block = self.partRect1x5.workplane.extrude(self.topHeight)\
+            .edges("|Z").fillet(self.baseFilletX)\
+            .edges(">Z").fillet(self.baseFilletX)
+
+        self.blocks.append( {'block': self.partRect1x5} )
+
+    def prtSrq3x3Cen(self):
+        self.partSrq3x3Cen = blockTemplate()
+        self.partSrq3x3Cen.name = '3x3 Square Centered'
+        self.partSrq3x3Cen.description = '3x3 Squared on Center'
+
+        self.partSrq3x3Cen.block = self.generateBaseBlock()
+
+        self.partSrq3x3Cen.workplane = self.partSrq3x3Cen.block.faces("Z").workplane()\
+            .moveTo(2.5, 2.5)\
+            .rect(1.5, 1.5)
+
+        self.partSrq3x3Cen.block = self.partSrq3x3Cen.workplane.extrude(self.topHeight)\
+            .edges("|Z").fillet(self.baseFilletX)\
+            .edges(">Z").fillet(self.baseFilletX)
+
+        self.blocks.append( {'block': self.partSrq3x3Cen} )
+
+    def partMedBend(self):
+        self.partMedBend = blockTemplate()
+        self.partMedBend.name = 'Medium Bend'
+        self.partMedBend.description = 'Medium Bend L Shape'
+
+        self.partMedBend.block = self.generateBaseBlock()
+
+        self.partMedBend.workplane = self.partMedBend.block.faces("Z").workplane()\
+            .lineTo(3,0)\
+            .lineTo(3,2)\
+            .radiusArc((2,3), -1)\
+            .lineTo(0,3)\
+            .lineTo(0,4)\
+            .lineTo(3,4)\
+            .radiusArc((4,3), 1)\
+            .lineTo(4,0)\
+            .lineTo(3,0)\
+            .close()
+
+        self.partMedBend.block = self.partMedBend.workplane.extrude(self.topHeight)\
+            .edges("|Z").fillet(self.baseFilletX)\
+            .edges(">Z").fillet(self.baseFilletX)
+
+        self.blocks.append( {'block': self.partMedBend} )
+
+    def partLargeBend(self):
+        self.partLargeBend = blockTemplate()
+        self.partLargeBend.name = 'Large Bend'
+        self.partLargeBend.description = 'Maxium Bend L Shape'
+
+        self.partLargeBend.block = self.generateBaseBlock()
+
+        self.partLargeBend.workplane = self.partLargeBend.block.faces("Z").workplane()\
+            .lineTo(4,0)\
+            .lineTo(4,3)\
+            .radiusArc((3,4), -1)\
+            .lineTo(0,4)\
+            .lineTo(0,5)\
+            .lineTo(4,5)\
+            .radiusArc((5,4), 1)\
+            .lineTo(5,0)\
+            .lineTo(4,0)\
+            .close()
+
+        self.partLargeBend.block = self.partLargeBend.workplane.extrude(self.topHeight)\
+            .edges("|Z").fillet(self.baseFilletX)\
+            .edges(">Z").fillet(self.baseFilletX)
+
+        self.blocks.append( {'block': self.partLargeBend} )
+
+
 
 
 blk = blkLibrary()
