@@ -58,6 +58,7 @@ class blkLibrary:
                               self.prtFnRect1x5Cen,
                               self.prtFnRect1x5,
                               self.prtSrq3x3Cen,
+                              self.prtTriIsoLarge,
                               self.partMedBend,
                               self.partLargeBend
                              ]
@@ -204,6 +205,24 @@ class blkLibrary:
             .edges(">Z").fillet(self.baseFilletX)
 
         self.blocks.append( {'block': self.partRect1x5} )
+
+    def prtTriIsoLarge(self):
+        self.partTriIso = blockTemplate()
+        self.partTriIso.name = 'Isosceles Triangle. I think.'
+        self.partTriIso.description = 'Isosceles Triangle centered'
+
+        self.partTriIso.block = self.generateBaseBlock()
+
+        self.partTriIso.workplane = self.partTriIso.block.faces("Z").workplane()\
+            .lineTo(5.0, 0)\
+            .lineTo(5.0/2, 5)\
+            .close()
+
+        self.partTriIso.block = self.partTriIso.workplane.extrude(self.topHeight)\
+            .edges(">Z").fillet(self.baseFilletX)
+
+        self.blocks.append( {'block': self.partTriIso} )
+
 
     def prtSrq3x3Cen(self):
         self.partSrq3x3Cen = blockTemplate()
