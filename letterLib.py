@@ -14,6 +14,8 @@ class blkLibrary:
         self.fontCombine = True
         self.fontName = "NotoEmoji-Regular.ttf"
         self.text = "!"
+        self.adjX = 0
+        self.adjY = 0
 
         #Block overall dimensions
         self.Xoutside = 4.0
@@ -45,10 +47,8 @@ class blkLibrary:
         self.base = cq.Workplane("XY")
 
         if createBlock:
-            self.createBaseBlockBody()
-            self.hollowBaseBlockBody()
-            self.createFootFront()
-            self.createFootRear()
+            createBlockHelper()
+
 
     #Creates a solid block body
     def createBaseBlockBody(self):
@@ -71,7 +71,7 @@ class blkLibrary:
 
     #Adds rear foot
     def createFootRear(self):
-        self.base = self.base.faces(">Z").workplane(offset=-1*fself.eetHeight)\
+        self.base = self.base.faces(">Z").workplane(offset=-1*self.feetHeight)\
         .moveTo(self.originX, self.originY)\
             .move(0, self.Youtside)\
             .rect(self.Xoutside,-1*self.Lfeet/2, centered=False)\
@@ -81,15 +81,24 @@ class blkLibrary:
             .loft(combine=True)
 
 
-    def addText(self, _text):
-        self.base = self.base.faces("<Z").workplane()\
+    def addText(self):
+        self.base = self.base.faces("<Z").workplane().center(self.adjX, self.adjY)\
             .text(self.text, self.fontSize, self.fontDistance, self.fontCut, self.fontCombine,\
                   clean=True, fontPath=self.fontName)
 
     #Add weeping hole for 3D resin to drain while printing/cleaning
     def addWeepingHole(self):
-        self.base = base.faces("<X[0]").workplane().moveTo(0,self.weepingHoleLocation)\
+        self.base = self.base.faces("<X[0]").workplane().moveTo(0,self.weepingHoleLocation)\
             .circle(self.weepingHoleDiameter).extrude(-1*self.Xoutside, combine='s')
+
+    def createBlockHelper(self):
+        self.base = cq.Workplane("XY")
+        self.createBaseBlockBody()
+        self.hollowBaseBlockBody()
+        self.createFootFront()
+        self.createFootRear()
+        self.addText()
+        self.addWeepingHole()
 
     #Export
     def exportAsSTL(self, stlName=None):
@@ -102,3 +111,9 @@ class blkLibrary:
 
 
 blk = blkLibrary()
+
+blocks = ['D', 'i', 'e', 'g', 'o', '😵']
+for letter in blocks:
+    blk.text = letter
+    blk.createBlockHelper()
+    blk.exportAsSTL()
