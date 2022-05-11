@@ -8,7 +8,7 @@ class blkLibrary:
         self.totalHeight = 23.32
 
         #Font information
-        self.fontSize = 3
+        self.fontSize = 4
         self.fontDistance = 1.0
         self.fontCut = False
         self.fontCombine = True
@@ -18,7 +18,7 @@ class blkLibrary:
         self.adjY = 0
 
         #Block overall dimensions
-        self.Xoutside = 4.0
+        self.Xoutside = 5.0
         self.Youtside = 5.0
 
         #Block walls
@@ -83,8 +83,8 @@ class blkLibrary:
 
     def addText(self):
         self.base = self.base.faces("<Z").workplane().center(self.adjX, self.adjY)\
-            .text(self.text, self.fontSize, self.fontDistance, self.fontCut, self.fontCombine,\
-                  clean=True, fontPath=self.fontName)
+            .text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
+                  clean=True, fontPath=self.fontName, combine='a')
 
     #Add weeping hole for 3D resin to drain while printing/cleaning
     def addWeepingHole(self):
@@ -101,19 +101,16 @@ class blkLibrary:
         self.addWeepingHole()
 
     #Export
-    def exportAsSTL(self, stlName=None):
+    def exportAsSTL(self, stlName=None, path=None):
+        if path == None:
+            path = '/'
+        else:
+            path = '/' + path + '/'
+
         if stlName == None:
             stlName = self.text + str('.stl')
         else:
             stlName = stlName + str('.stl')
 
+        print(stlName)
         cq.exporters.export(self.base, stlName)
-
-
-blk = blkLibrary()
-
-blocks = ['D', 'i', 'e', 'g', 'o', '😵']
-for letter in blocks:
-    blk.text = letter
-    blk.createBlockHelper()
-    blk.exportAsSTL()
