@@ -1,15 +1,21 @@
 ## Python Generated Blocks
 
-Blocks are generated using Python and [Cadquery](https://cadquery.readthedocs.io/en/latest/index.html). Blocks are composed of a common 5x5 *base block*. Each top-face is unique.
+This project has evolved a few times. 
+
+### Background and v1 - Lego Style
+The original idea stems from the [Provision Press](https://www.provisionalpress.com) and their simple Lego based kid friendly system. Piggy-backing off that, the first version were blocks are composed of a common 5x5 *base block*. Each printable face is unique. The Blocks are generated using Python and [Cadquery](https://cadquery.readthedocs.io/en/latest/index.html). 
 
 The advantage to using code is avoiding repeated actions. Code to create each base is a simple line of code. Modifications can be preformed with minimal effort. Modifications, such as adding a version number to each block has to only be done once.
 
 Currently most faces are circles, squares, rectangles, arcs, or bends. They are made to *mate* with other blocks. Future work will involve more complicated shapes and letters.
 
-Ultimate goal is for them to be used with a small printing press. Some kind of frame will be created to hold blocks in place.
-
 Executing the blockLib.py file will generate (9) blocks as of 3/22 and export them as STLs.
 
-More work planned to export blocks to a single STL for easy 3D printing.
+See [blockLib.py](https://github.com/aguileraGit/blocks/blob/main/blockLib.py) for the main library. 
 
-See [Provision Press](https://www.provisionalpress.com) for their simple Lego based kid friendly system. It's unclear if this would work with their press.
+### v2 - Font Focus
+This project moved to a more traditional printing press. The second library [letterLib.py](https://github.com/aguileraGit/blocks/blob/main/letterLib.py) allows for creation of *Type* (I think I've used that correctly). Fonts can be downloaded from [Google Fonts](https://fonts.google.com/). Using a few lines of code, an STL can be generated.
+
+See [example](https://github.com/aguileraGit/blocks/blob/main/letter-example-simple.py) for generating letter.
+
+With Google's new Font [https://fonts.google.com/noto/specimen/Noto+Emoji](Noto Emoji), emojis can be easily created. There are some known issues with this. See [example](https://github.com/aguileraGit/blocks/blob/main/letter-example-simple.py).
