@@ -1,4 +1,6 @@
 import cadquery as cq
+import requests
+import zipfile
 
 class blkLibrary:
 
@@ -114,3 +116,32 @@ class blkLibrary:
 
         print(stlName)
         cq.exporters.export(self.base, stlName)
+
+    def getFont(self, fontName):
+        #Need to check if font exisits in folder
+        zipFileName = fontName.replace(' ', '-') + '.zip'
+
+        #Replace spaces with %20
+        fontNameDownload = fontName.replace(' ', '%20')
+
+        #Define url.
+        url = 'https://fonts.google.com/download?family=' + fontNameDownload
+
+        #Download
+        r = requests.get(url, allow_redirects=True)
+
+        #Write to the folder
+        open(zipFileName, 'wb').write(r.content)
+
+        #Open zip file
+        with zipfile.ZipFile(zipFileName, mode="r") as archive:
+            for filename in archive.namelist():
+                #Look for actual font
+                if filename[-4:] == '.ttf':
+                    #Save font to directory
+                    archive.extract(filename)
+
+    def setFontName(self, fontName):
+        pass
+        #if font + '-Regular.ttf' is found in directory,
+        # self.fontName = font + '-Regular.ttf'

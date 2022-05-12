@@ -8,8 +8,9 @@ from letterLib import blkLibrary
 #Start library
 blk = blkLibrary()
 
-#Define path - create a folder - Not working!
-path = 'testEmoji'
+#Download Font from Google Fonts
+fontName = blk.getFont('Creepster')
+print('Full Font Name: ' + fontName)
 
 #Text to convert. One letter or emoji per block
 text = '8-bit'
