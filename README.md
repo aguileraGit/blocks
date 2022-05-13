@@ -26,7 +26,7 @@ With Google's new Font [https://fonts.google.com/noto/specimen/Noto+Emoji](Noto 
 - Look at Icons: https://fonts.google.com/icons?category=Display
 - https://fonts.google.com/featured?category=Display&icon.style=Sharp
 - https://fonts.google.com/featured/High-Impact+Vernacular+Display?category=Display&icon.style=Sharp
-- It would be nice if setting a font would look for the -Regular.tff added by Google.
+- ~It would be nice if setting a font would look for the -Regular.tff added by Google.~
 - Font should look to see if file exists
 - Find a way to autoscale font per block size
 - Add example with list of dict of fontnames, offset, sizes
