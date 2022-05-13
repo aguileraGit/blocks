@@ -32,3 +32,4 @@ With Google's new Font [https://fonts.google.com/noto/specimen/Noto+Emoji](Noto 
 - Add example with list of dict of fontnames, offset, sizes
 - Find way to export multiple blocks to a single STL
 - Add image to STL
+- Add pillars for very large blocks

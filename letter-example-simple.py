@@ -1,6 +1,6 @@
 '''
-Simple example. Font must be downloaded and placed in the same directory.
-See: https://fonts.google.com/specimen/Press+Start+2P?category=Display#standard-styles
+Simple example. Font can be downloaded directly from Google.
+Font can also be placed in the directory.
 '''
 
 from letterLib import blkLibrary
@@ -9,13 +9,18 @@ from letterLib import blkLibrary
 blk = blkLibrary()
 
 #Download Font from Google Fonts
-fontName = blk.getFont('Creepster')
+fontName = blk.getGoogleFont('Creepster')
+
+#Print actual name downloaded from Google Fonts
 print('Full Font Name: ' + fontName)
 
-#Text to convert. One letter or emoji per block
-text = '8-bit'
+#FontName can be 'Creepster' or 'Creepster.ttf' or 'Creepster-Regular.ttf'
+blk.setFontName('Creepster')
 
-#Convert text to a list. Adds space in first location
+#Text to convert. One letter or emoji per block
+text = 'Spooky!'
+
+#Convert text to a list.
 blocks = list(text)
 
 #Process list
@@ -23,10 +28,9 @@ for letter in blocks:
 
     #Update letter
     blk.text = letter
-    blk.fontName = 'PressStart2P-Regular.ttf'
 
     #Create block
     blk.createBlockHelper()
 
     #Export as STL
-    blk.exportAsSTL()
+    #blk.exportAsSTL()

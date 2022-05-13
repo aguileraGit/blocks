@@ -1,6 +1,9 @@
 import cadquery as cq
 import requests
 import zipfile
+import glob
+import os
+import re
 
 class blkLibrary:
 
@@ -117,8 +120,9 @@ class blkLibrary:
         print(stlName)
         cq.exporters.export(self.base, stlName)
 
-    def getFont(self, fontName):
+    def getGoogleFont(self, fontName):
         #Need to check if font exisits in folder
+
         zipFileName = fontName.replace(' ', '-') + '.zip'
 
         #Replace spaces with %20
@@ -134,6 +138,7 @@ class blkLibrary:
         open(zipFileName, 'wb').write(r.content)
 
         #Open zip file
+        fileFound = False
         with zipfile.ZipFile(zipFileName, mode="r") as archive:
             for filename in archive.namelist():
                 #Look for actual font
@@ -141,7 +146,28 @@ class blkLibrary:
                     #Save font to directory
                     archive.extract(filename)
 
+                    fileFound = True
+                    return filename
+
+        #Assert is font download/extraction isn't successful
+        assert fileFound != False, f'Error extracting Font'
+
+
+    #Should break this down into 2 parts. One to search directory.
+    # Two. If found, set fontName.
     def setFontName(self, fontName):
-        pass
-        #if font + '-Regular.ttf' is found in directory,
-        # self.fontName = font + '-Regular.ttf'
+        #Remove .ttf
+        fontName = fontName.strip('.ttf')
+
+        reFont = re.escape(fontName) + r'(-Regular|).ttf'
+
+        #Find all files that match
+        fontName = list(filter(re.compile(reFont).match, os.listdir()))
+
+        #Assert if font isn't found
+        assert len(fontName) > 0, f'Font not found'
+
+        #Assert if multiple fonts match
+        assert len(fontName) == 1, f'Multiple fonts found'
+
+        self.fontName = fontName[0]

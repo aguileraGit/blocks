@@ -1,4 +1,5 @@
 *.stl
 *.ttf
 *.pyc
+*.zip
 .DS_Store
