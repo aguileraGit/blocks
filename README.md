@@ -33,3 +33,4 @@ With Google's new Font [https://fonts.google.com/noto/specimen/Noto+Emoji](Noto 
 - Find way to export multiple blocks to a single STL
 - Add image to STL
 - Add pillars for very large blocks
+- Look at Assemblies for easier printing: https://cadquery.readthedocs.io/en/latest/assy.html
