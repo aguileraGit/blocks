@@ -63,10 +63,19 @@ base = base.faces("<X[0]").workplane().moveTo(0,weepingHoleLocation)\
     .circle(weepingHoleDiameter).extrude(-1*Xoutside, combine='s')
 
 
+#Assembly
+assy = cq.Assembly()
 
+box = cq.Solid.makeBox(10, 10, 10)
 
+assy.add(base, name="base0", color=cq.Color("green") )
 
+assy.add(box, name="box1", color=cq.Color("blue"),\
+         loc=cq.Location(cq.Vector(30, 0, 0)))
+
+show_object(assy)
+assy.save('assembly.step')
 
 #Export
-cq.exporters.export(base, 'testLetter.stl')
+#cq.exporters.export(assy, 'testLetter.stl')
 

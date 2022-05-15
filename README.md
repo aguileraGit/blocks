@@ -24,13 +24,18 @@ With Google's new Font [https://fonts.google.com/noto/specimen/Noto+Emoji](Noto 
 - Investigate emoji issues (multiple emojis embedded in single emoji and Z face disappearing)
 - Look at Noto Font: https://fonts.google.com/noto?category=Display
 - Look at Icons: https://fonts.google.com/icons?category=Display
+  - Icons are in SVG. SVG has it's own set of 'commands' for creating shapes. Would need to write a converter from commands to cq commands.
 - https://fonts.google.com/featured?category=Display&icon.style=Sharp
 - https://fonts.google.com/featured/High-Impact+Vernacular+Display?category=Display&icon.style=Sharp
 - ~It would be nice if setting a font would look for the -Regular.tff added by Google.~
 - Font should look to see if file exists
 - Find a way to autoscale font per block size
+  - Different fonts with a single size still vary in height!
 - Add example with list of dict of fontnames, offset, sizes
 - Find way to export multiple blocks to a single STL
+  - Able to export multiple blocks as an assembly. Can't be exported as STL.
+  - https://cadquery.readthedocs.io/en/latest/assy.html
 - Add image to STL
 - Add pillars for very large blocks
-- Look at Assemblies for easier printing: https://cadquery.readthedocs.io/en/latest/assy.html
+- Look at https://github.com/michaelgale/cq-kit
+- Look at https://github.com/thearn/stl_tools

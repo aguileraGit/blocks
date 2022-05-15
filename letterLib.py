@@ -120,6 +120,9 @@ class blkLibrary:
         print(stlName)
         cq.exporters.export(self.base, stlName)
 
+    def exportAsPart(self):
+        return self.base
+
     def getGoogleFont(self, fontName):
         #Need to check if font exisits in folder
 
