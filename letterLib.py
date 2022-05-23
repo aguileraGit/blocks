@@ -96,6 +96,9 @@ class blkLibrary:
         self.base = self.base.faces("<X[0]").workplane().moveTo(0,self.weepingHoleLocation)\
             .circle(self.weepingHoleDiameter).extrude(-1*self.Xoutside, combine='s')
 
+    def mirrorBlock(self):
+        self.base = self.base('XY')
+
     def createBlockHelper(self):
         self.base = cq.Workplane("XY")
         self.createBaseBlockBody()
@@ -104,6 +107,7 @@ class blkLibrary:
         self.createFootRear()
         self.addText()
         self.addWeepingHole()
+        self.mirroBlock()
 
     #Export
     def exportAsSTL(self, stlName=None, path=None):
