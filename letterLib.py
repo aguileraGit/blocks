@@ -46,7 +46,7 @@ class blkLibrary:
         self.blockHeight = self.totalHeight - self.fontDistance - self.feetHeight
 
         self.weepingHoleDiameter = 0.4
-        self.weepingHoleLocation = self.totalHeight - self.blockHeight  + self.weepingHoleDiameter/2
+        self.weepingHoleLocation = self.totalHeight - self.blockHeight  + self.weepingHoleDiameter
 
         #Create Empty Block
         self.base = cq.Workplane("XY")
