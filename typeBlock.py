@@ -40,6 +40,7 @@ class blkLibrary:
         self.base = cq.Workplane("XY")
         self.createText()
         self.getBB()
+        self.addNeck()
         
     def createText(self):
         self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
@@ -47,6 +48,13 @@ class blkLibrary:
 
     def getBB(self):
         self.bbox = self.base.val().BoundingBox()
+        
+    def addNeck(self):
+        self.base = self.base.faces(">Z")\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
+        .extrude(-5)
+        
         
         
 #Start library
