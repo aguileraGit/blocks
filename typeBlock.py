@@ -1,81 +1,61 @@
 
-totalHeight = 23.32
-
-fontSize = 70
+'''
+fontSize = 5.6
 fontDistance = 1.0
 fontCut = False
 
-adjX = 0.0 #-0.3
-adjY = 0.1 #0.7
-
-Xoutside = 40.0
-Youtside = 60.0
-
-Lfeet = 10.6
-Wshort = 10.8
-
-hollowX = Xoutside - (Wshort)
-hollowY = Youtside - (Lfeet)
-hollowDepth = -12.0
-
-originX = -1 * (Xoutside/2)
-originY = -1 * (Youtside/2)
-
-feetHeight = 4.8
-
-#Keep to the standard
-blockHeight = totalHeight - fontDistance - feetHeight
-
-#Create Base
-base = cq.Workplane("XY")
-base = base.box(Xoutside, Youtside, blockHeight, centered=True)
-
-#Cut center out from the bottom
-base = base.faces(">Z").workplane().rect(hollowX,hollowY).extrude(hollowDepth, combine='s')
-
-#Foot
-base = base.faces(">Z").workplane().moveTo(originX, originY)\
-    .rect(Xoutside,Lfeet/2, centered=False)\
-    .workplane(offset=feetHeight).moveTo(originX, originY)\
-    .rect(Xoutside, (Lfeet*0.2), centered=False)\
-    .loft(combine=True)
-
-#Other foot
-base = base.faces(">Z").workplane(offset=-1*feetHeight).moveTo(originX, originY)\
-    .move(0, Youtside)\
-    .rect(Xoutside,-1*Lfeet/2, centered=False)\
-    .workplane(offset=feetHeight).moveTo(originX, originY)\
-    .move(0, Youtside)\
-    .rect(Xoutside, (-1*Lfeet/2)*0.4, centered=False)\
-    .loft(combine=True)
-
 #Text
-base = base.faces("<Z").workplane().center(adjX,adjY)\
-    .text("A", fontSize, fontDistance, fontCut, \
-          clean=True, fontPath="Creepster-Regular.ttf",\
-              combine='a')
-
-#Weeping Hole
-weepingHoleDiameter = 0.4
-weepingHoleLocation = totalHeight - blockHeight  + weepingHoleDiameter/2
-
-base = base.faces("<X[0]").workplane().moveTo(0,weepingHoleLocation)\
-    .circle(weepingHoleDiameter).extrude(-1*Xoutside, combine='s')
+base = cq.Workplane("XY").text("P", fontSize, fontDistance, fontCut,\
+    clean=True, combine='a')
 
 
-#Assembly
-assy = cq.Assembly()
+# Show the bounding box to get 'shift' 
+bbox = base.val().BoundingBox()
 
-box = cq.Solid.makeBox(10, 10, 10)
+# cen = text.val().CenterOfBoundBox() # Alternative method of getting the center.
+base = base.faces(">Z")\
+    .moveTo(bbox.center.x, bbox.center.y)\
+    .rect(bbox.xmax-bbox.xmin, bbox.ymax-bbox.ymin)\
+    .extrude(-5)
+'''
 
-assy.add(base, name="base0", color=cq.Color("green") )
+class blkLibrary:
 
-assy.add(box, name="box1", color=cq.Color("blue"),\
-         loc=cq.Location(cq.Vector(30, 0, 0)))
+    def __init__(self):
 
-show_object(assy)
-assy.save('assembly.step')
+        #Overall height of the block (standard)
+        self.totalHeight = 23.32
 
-#Export
-#cq.exporters.export(assy, 'testLetter.stl')
+        #Font information
+        self.fontSize = 4
+        self.fontDistance = 1.0
+        self.fontCut = False
+        self.fontCombine = True
+        self.fontName = "NotoEmoji-Regular.ttf"
+        self.text = "!"
+        self.adjX = 0
+        self.adjY = 0
+        
+    def createBlockHelper(self):
+        self.base = cq.Workplane("XY")
+        self.createText()
+        self.getBB()
+        
+    def createText(self):
+        self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
+                    fontPath = self.fontName, clean=True, combine='a')
 
+    def getBB(self):
+        self.bbox = self.base.val().BoundingBox()
+        
+        
+#Start library
+blk = blkLibrary()
+
+blk.text = "😀"
+
+#Create block
+blk.createBlockHelper()
+
+
+show_object(blk.base)
