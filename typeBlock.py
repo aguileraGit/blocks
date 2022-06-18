@@ -3,6 +3,8 @@ class blkLibrary:
 
     def __init__(self):
 
+        self.version = 0.1
+        
         #Overall height of the block (standard)
         self.totalHeight = 23.32
 
@@ -11,13 +13,11 @@ class blkLibrary:
         self.fontDistance = 1.0
         self.fontCut = False
         self.fontCombine = True
-        self.fontName = "NotoEmoji-Regular.ttf"
+        self.fontName = None
         self.text = "!"
-        self.adjX = 0
-        self.adjY = 0
         
         #Neck - Z height from the font to the body. Always solid.
-        self.neckHeight = 2.0
+        self.neckHeight = 3.0
         
         #Feet height
         self.feetHeight = 2.2
@@ -27,18 +27,22 @@ class blkLibrary:
         self.xRatio = 0.85
         self.yRatio = 0.65
         
-        self.weepingHoleDiameter = 1
+        self.weepingHoleDiameter = 2.0
+        
+        self.chamferSize = 1.0
         
     def createBlockHelper(self):
         self.base = cq.Workplane("XY")
         self.createText()
         self.getBB()
+        self.addPadding()
         self.addShoulder()
         self.calculateBodyHeight()
         self.createBody()
         self.hollowBody()
         self.createFeet()
         self.addWeepingHole()
+        self.addChamfer()
         self.addVersion()
         self.addSerialNumber()
         
@@ -48,6 +52,9 @@ class blkLibrary:
 
     def getBB(self):
         self.bbox = self.base.val().BoundingBox()
+        
+    def addPadding(self):
+        pass
         
     def addShoulder(self):
         self.base = self.base.faces(">Z")\
@@ -95,18 +102,26 @@ class blkLibrary:
         .rect(self.bbox.xlen, -1*cy*self.feetLoftRatio, centered=False)\
         .loft(combine=True)
         
+    def addChamfer(self):
+        pass
+        
     def addWeepingHole(self):
-        bbox = self.base.faces(">X").val().BoundingBox()
+        #Get bounding box for X Face
+        xFacebbox = self.base.faces(">X").val().BoundingBox()
         
-        
+        #Y loc: -1*xFacebbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
         self.base = self.base.faces(">X").workplane()\
-        .center(bbox.center.y, -1*bbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter/2)\
-        .box(1,1,1)
-        
-        #Continue here.
+        .center(xFacebbox.center.y, xFacebbox.center.x)\
+        .circle(self.weepingHoleDiameter)\
+        .extrude(-1*self.bbox.xlen, combine='cut')
     
     def addVersion(self):
-        pass
+        yFacebbox = self.base.faces(">Y").val().BoundingBox()
+        
+        self.base = self.base.faces(">Y").workplane()\
+        .moveTo(yFacebbox.center.x, yFacebbox.center.y)\
+        .rect(1,1)\
+        .extrude(10)
 
     def addSerialNumber(self):
         pass
@@ -114,7 +129,7 @@ class blkLibrary:
 #Start library
 blk = blkLibrary()
 
-blk.text = "💩"
+blk.text = "T"
 
 #Create block
 blk.createBlockHelper()
