@@ -116,12 +116,21 @@ class blkLibrary:
         .extrude(-1*self.bbox.xlen, combine='cut')
     
     def addVersion(self):
+        #Get dimensions using Bounding Box
         yFacebbox = self.base.faces(">Y").val().BoundingBox()
         
-        self.base = self.base.faces(">Y").workplane()\
+        #Verify Face
+        base = self.base.faces(">Y")
+        debug(base)
+        
+        #Extrude 
+        self.base = self.base.faces(">Y")\
         .moveTo(yFacebbox.center.x, yFacebbox.center.y)\
         .rect(1,1)\
         .extrude(10)
+        
+        #Update object
+        show_object(self.base)
 
     def addSerialNumber(self):
         pass
@@ -135,4 +144,3 @@ blk.text = "T"
 blk.createBlockHelper()
 
 
-show_object(blk.base)
