@@ -3,7 +3,9 @@ class blkLibrary:
 
     def __init__(self):
 
-        self.version = 0.1
+        self.version = "v0.1"
+        self.versionTextSize = 2.0
+        self.versionTextEmboss = -0.2
         
         #Overall height of the block (standard)
         self.totalHeight = 23.32
@@ -13,7 +15,7 @@ class blkLibrary:
         self.fontDistance = 1.0
         self.fontCut = False
         self.fontCombine = True
-        self.fontName = None
+        self.fontName = "NotoEmoji-Regular.ttf"
         self.text = "!"
         
         #Neck - Z height from the font to the body. Always solid.
@@ -30,6 +32,9 @@ class blkLibrary:
         self.weepingHoleDiameter = 2.0
         
         self.chamferSize = 1.0
+        
+        self.paddingX = 0.0
+        self.paddingY = 0.0
         
     def createBlockHelper(self):
         self.base = cq.Workplane("XY")
@@ -54,7 +59,14 @@ class blkLibrary:
         self.bbox = self.base.val().BoundingBox()
         
     def addPadding(self):
-        pass
+        if self.paddingX > 0.0:
+            self.bbox.xmin = self.bbox.xmin - (self.paddingX/2)
+            self.bbox.xmax = self.bbox.xmax + (self.paddingX/2)
+            
+        if self.paddingY > 0.0:
+            self.bbox.ymin = self.bbox.ymin - (self.paddingY/2)
+            self.bbox.ymax = self.bbox.ymax + (self.paddingY/2)
+            
         
     def addShoulder(self):
         self.base = self.base.faces(">Z")\
@@ -88,18 +100,18 @@ class blkLibrary:
         
         self.base = self.base.faces(">Z").workplane(offset= -1*(self.neckHeight + self.bodyHeight))\
         .move(self.bbox.xmin, self.bbox.ymin)\
-        .rect(self.bbox.xlen, cy, centered=False)\
+        .rect(self.bbox.xlen+self.paddingX, cy, centered=False)\
         .workplane(offset=-1*self.feetHeight)\
         .move(self.bbox.xmin, self.bbox.ymin)\
-        .rect(self.bbox.xlen, cy*self.feetLoftRatio, centered=False)\
+        .rect(self.bbox.xlen+self.paddingX, cy*self.feetLoftRatio, centered=False)\
         .loft(combine=True)
         
         self.base = self.base.faces(">Z").workplane(offset= -1*(self.neckHeight + self.bodyHeight))\
         .move(self.bbox.xmin, self.bbox.ymax)\
-        .rect(self.bbox.xlen, -1*cy, centered = False)\
+        .rect(self.bbox.xlen+self.paddingX, -1*cy, centered = False)\
         .workplane(offset=-1*self.feetHeight)\
         .move(self.bbox.xmin, self.bbox.ymax)\
-        .rect(self.bbox.xlen, -1*cy*self.feetLoftRatio, centered=False)\
+        .rect(self.bbox.xlen+self.paddingX, -1*cy*self.feetLoftRatio, centered=False)\
         .loft(combine=True)
         
     def addChamfer(self):
@@ -111,36 +123,28 @@ class blkLibrary:
         
         #Y loc: -1*xFacebbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
         self.base = self.base.faces(">X").workplane()\
-        .center(xFacebbox.center.y, xFacebbox.center.x)\
+        .center(xFacebbox.center.y, -1*xFacebbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter)\
         .circle(self.weepingHoleDiameter)\
         .extrude(-1*self.bbox.xlen, combine='cut')
     
     def addVersion(self):
-        #Get dimensions using Bounding Box
-        yFacebbox = self.base.faces(">Y").val().BoundingBox()
-        
-        #Verify Face
-        base = self.base.faces(">Y")
-        debug(base)
-        
         #Extrude 
-        self.base = self.base.faces(">Y")\
-        .moveTo(yFacebbox.center.x, yFacebbox.center.y)\
-        .rect(1,1)\
-        .extrude(10)
+        self.base = self.base.faces("<Y").workplane(centerOption="CenterOfMass")\
+        .move(0, -1*self.bodyHeight)\
+        .text(self.version, self.versionTextSize, self.versionTextEmboss, self.fontCut,\
+              fontPath = None, clean=True, combine='cut')
         
-        #Update object
-        show_object(self.base)
-
     def addSerialNumber(self):
         pass
         
 #Start library
 blk = blkLibrary()
 
-blk.text = "T"
+blk.text = "🥸"
+blk.paddingX = 2.0
 
 #Create block
 blk.createBlockHelper()
 
-
+#Update object
+show_object(blk.base)
