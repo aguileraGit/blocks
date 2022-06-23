@@ -3,8 +3,8 @@ class blkLibrary:
 
     def __init__(self):
 
-        self.version = "v0.1"
-        self.versionTextSize = 2.0
+        self.version = "v0.2"
+        self.versionTextSize = 20.0
         self.versionTextEmboss = -0.2
         
         #Overall height of the block (standard)
@@ -50,6 +50,10 @@ class blkLibrary:
         self.addChamfer()
         self.addVersion()
         self.addSerialNumber()
+        #self.addTopFix()
+        
+        
+        
         
     def createText(self):
         self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
@@ -69,10 +73,17 @@ class blkLibrary:
             
         
     def addShoulder(self):
-        self.base = self.base.faces(">Z")\
+        debug(self.base.faces(">Z"))
+        
+        #Something to do with the offset -1 doesn't work. Sure the plane is right?
+        
+        self.base = self.base.faces(">Z").workplane(offset=-1.1*(self.fontDistance))\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
         .extrude(-1 * self.neckHeight)
+        
+        #show_object(self.base)
+
         
     def calculateBodyHeight(self):
         self.bodyHeight = self.totalHeight - self.fontDistance - self.neckHeight - self.feetHeight
@@ -97,7 +108,6 @@ class blkLibrary:
         by = yLen * self.yRatio
         cy = (yLen - by)/2.0
         
-        
         self.base = self.base.faces(">Z").workplane(offset= -1*(self.neckHeight + self.bodyHeight))\
         .move(self.bbox.xmin, self.bbox.ymin)\
         .rect(self.bbox.xlen+self.paddingX, cy, centered=False)\
@@ -121,27 +131,39 @@ class blkLibrary:
         #Get bounding box for X Face
         xFacebbox = self.base.faces(">X").val().BoundingBox()
         
-        #Y loc: -1*xFacebbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
         self.base = self.base.faces(">X").workplane()\
         .center(xFacebbox.center.y, -1*xFacebbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter)\
         .circle(self.weepingHoleDiameter)\
-        .extrude(-1*self.bbox.xlen, combine='cut')
+        .extrude(-1*(self.bbox.xlen+self.paddingX), combine='cut')
     
     def addVersion(self):
         #Extrude 
-        self.base = self.base.faces("<Y").workplane(centerOption="CenterOfMass")\
+        self.base = self.base.faces("<X").workplane(centerOption="CenterOfMass")\
         .move(0, -1*self.bodyHeight)\
-        .text(self.version, self.versionTextSize, self.versionTextEmboss, self.fontCut,\
+        .text(self.version, self.totalHeight/8.0, self.versionTextEmboss, self.fontCut,\
               fontPath = None, clean=True, combine='cut')
         
     def addSerialNumber(self):
         pass
+    
+    def addTopFix(self):
+        self.base = self.base.faces("<Z[2]").workplane(centerOption="CenterOfMass")\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
+        .extrude(-1 * self.neckHeight, combine='a')
+        
+        
         
 #Start library
 blk = blkLibrary()
 
-blk.text = "🥸"
-blk.paddingX = 2.0
+blk.text = "🤯"
+
+blk.neckHeight = 4
+blk.fontDistance = 3.0 #Breaks when greater than 3. Equal to neck
+blk.paddingX = 4.0
+blk.paddingY = 2.0
+#blk.fontName = 'PressStart2P-Regular.ttf'
 
 #Create block
 blk.createBlockHelper()
