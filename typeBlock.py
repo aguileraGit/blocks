@@ -15,7 +15,7 @@ class blkLibrary:
         self.fontDistance = 1.0
         self.fontCut = False
         self.fontCombine = True
-        self.fontName = "NotoEmoji-Regular.ttf"
+        self.fontName = None
         self.text = "!"
         
         #Neck - Z height from the font to the body. Always solid.
@@ -53,11 +53,9 @@ class blkLibrary:
         #self.addTopFix()
         
         
-        
-        
     def createText(self):
         self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
-                    fontPath = self.fontName, clean=True, combine='a')
+                    fontPath = self.fontName, clean=False, combine='a')
 
     def getBB(self):
         self.bbox = self.base.val().BoundingBox()
@@ -73,14 +71,17 @@ class blkLibrary:
             
         
     def addShoulder(self):
-        debug(self.base.faces(">Z"))
+        #debug(self.base.faces(">Z"))
         
-        #Something to do with the offset -1 doesn't work. Sure the plane is right?
+        #Find the max Z height and offset down by the font distance.
+        # Adding -0.1 fixes the strangeness, but leaves a gap
+        # Adding +0.1 
+        offsetDistance = -1*(self.fontDistance) + 0.0
         
-        self.base = self.base.faces(">Z").workplane(offset=-1.1*(self.fontDistance))\
+        self.base = self.base.faces(">Z").workplane(offset = offsetDistance)\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
-        .extrude(-1 * self.neckHeight)
+        .extrude(-1 * self.neckHeight, combine='a', clean=True)
         
         #show_object(self.base)
 
@@ -90,7 +91,9 @@ class blkLibrary:
         print(self.bodyHeight)
 
     def createBody(self):
-        self.base = self.base.faces(">Z").workplane(offset=-1 * self.neckHeight)\
+        offsetDistance = -1 * (self.neckHeight + self.fontDistance)
+        
+        self.base = self.base.faces(">Z").workplane(offset= offsetDistance)\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
         .extrude(-1 * self.bodyHeight)
@@ -104,11 +107,13 @@ class blkLibrary:
         
         
     def createFeet(self):
+        offsetDistance = -1 * (self.neckHeight + self.fontDistance + self.bodyHeight)
+        
         yLen = self.bbox.ylen
         by = yLen * self.yRatio
         cy = (yLen - by)/2.0
         
-        self.base = self.base.faces(">Z").workplane(offset= -1*(self.neckHeight + self.bodyHeight))\
+        self.base = self.base.faces(">Z").workplane(offset = offsetDistance)\
         .move(self.bbox.xmin, self.bbox.ymin)\
         .rect(self.bbox.xlen+self.paddingX, cy, centered=False)\
         .workplane(offset=-1*self.feetHeight)\
@@ -116,7 +121,7 @@ class blkLibrary:
         .rect(self.bbox.xlen+self.paddingX, cy*self.feetLoftRatio, centered=False)\
         .loft(combine=True)
         
-        self.base = self.base.faces(">Z").workplane(offset= -1*(self.neckHeight + self.bodyHeight))\
+        self.base = self.base.faces(">Z").workplane(offset= offsetDistance)\
         .move(self.bbox.xmin, self.bbox.ymax)\
         .rect(self.bbox.xlen+self.paddingX, -1*cy, centered = False)\
         .workplane(offset=-1*self.feetHeight)\
@@ -131,13 +136,14 @@ class blkLibrary:
         #Get bounding box for X Face
         xFacebbox = self.base.faces(">X").val().BoundingBox()
         
+        yDist = self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
+        
         self.base = self.base.faces(">X").workplane()\
-        .center(xFacebbox.center.y, -1*xFacebbox.xlen + self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter)\
+        .center(xFacebbox.center.y, yDist)\
         .circle(self.weepingHoleDiameter)\
         .extrude(-1*(self.bbox.xlen+self.paddingX), combine='cut')
     
     def addVersion(self):
-        #Extrude 
         self.base = self.base.faces("<X").workplane(centerOption="CenterOfMass")\
         .move(0, -1*self.bodyHeight)\
         .text(self.version, self.totalHeight/8.0, self.versionTextEmboss, self.fontCut,\
@@ -157,13 +163,15 @@ class blkLibrary:
 #Start library
 blk = blkLibrary()
 
-blk.text = "🤯"
+blk.text = '😤'
 
-blk.neckHeight = 4
-blk.fontDistance = 3.0 #Breaks when greater than 3. Equal to neck
-blk.paddingX = 4.0
-blk.paddingY = 2.0
+blk.neckHeight = 3.0
+blk.fontDistance = 1.0
+#blk.paddingX = 4.0
+#blk.paddingY = 2.0
 #blk.fontName = 'PressStart2P-Regular.ttf'
+#blk.fontName = 'OleoScript-Regular.ttf'
+blk.fontName = 'NotoEmoji-Regular.ttf'
 
 #Create block
 blk.createBlockHelper()
