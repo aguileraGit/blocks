@@ -9,105 +9,158 @@ class blkLibrary:
 
     def __init__(self, createBlock=False):
 
+        self.version = "v0.2"
+        self.versionTextSize = 20.0
+        self.versionTextEmboss = -0.2
+
         #Overall height of the block (standard)
         self.totalHeight = 23.32
 
         #Font information
-        self.fontSize = 4
+        self.fontSize = 28
         self.fontDistance = 1.0
         self.fontCut = False
         self.fontCombine = True
-        self.fontName = "NotoEmoji-Regular.ttf"
+        self.fontName = None
         self.text = "!"
-        self.adjX = 0
-        self.adjY = 0
 
-        #Block overall dimensions
-        self.Xoutside = 5.0
-        self.Youtside = 5.0
-
-        #Block walls
-        self.Lfeet = 1.6
-        self.Wshort = 0.8
-
-        #Hollow
-        self.hollowX = self.Xoutside - (self.Wshort)
-        self.hollowY = self.Youtside - (self.Lfeet)
-        self.hollowDepth = -20.0
-
-        #Block starts centered on the XYZ origin. These are the true 0,0,0 points
-        self.originX = -1 * (self.Xoutside/2)
-        self.originY = -1 * (self.Youtside/2)
+        #Neck - Z height from the font to the body. Always solid.
+        self.neckHeight = 3.0
 
         #Feet height
-        self.feetHeight = 0.8
+        self.feetHeight = 2.2
+        self.feetLoftRatio = 0.6
 
-        #Keep to the standard
-        self.blockHeight = self.totalHeight - self.fontDistance - self.feetHeight
+        #Ratios - Define wall & feet thickness
+        self.xRatio = 0.85
+        self.yRatio = 0.65
 
-        self.weepingHoleDiameter = 0.4
-        self.weepingHoleLocation = self.totalHeight - self.blockHeight  + self.weepingHoleDiameter
+        self.weepingHoleDiameter = 2.0
 
-        #Create Empty Block
-        self.base = cq.Workplane("XY")
+        self.chamferSize = 1.0
 
-        if createBlock:
-            createBlockHelper()
-
-
-    #Creates a solid block body
-    def createBaseBlockBody(self):
-        self.base = self.base.box(self.Xoutside, self.Youtside, self.blockHeight,\
-        centered=True)
-
-    #Hollows out the block
-    def hollowBaseBlockBody(self):
-        self.base = self.base.faces(">Z").workplane().rect(self.hollowX,\
-        self.hollowY).extrude(self.hollowDepth, combine='s')
-
-    #Adds front foot
-    def createFootFront(self):
-        self.base = self.base.faces(">Z").workplane().moveTo(self.originX,\
-        self.originY)\
-            .rect(self.Xoutside, self.Lfeet/2, centered=False)\
-            .workplane(offset=self.feetHeight).moveTo(self.originX, self.originY)\
-            .rect(self.Xoutside, (self.Lfeet*0.2), centered=False)\
-            .loft(combine=True)
-
-    #Adds rear foot
-    def createFootRear(self):
-        self.base = self.base.faces(">Z").workplane(offset=-1*self.feetHeight)\
-        .moveTo(self.originX, self.originY)\
-            .move(0, self.Youtside)\
-            .rect(self.Xoutside,-1*self.Lfeet/2, centered=False)\
-            .workplane(offset=self.feetHeight).moveTo(self.originX, self.originY)\
-            .move(0, self.Youtside)\
-            .rect(self.Xoutside, (-1*self.Lfeet/2)*0.4, centered=False)\
-            .loft(combine=True)
-
-
-    def addText(self):
-        self.base = self.base.faces("<Z").workplane().center(self.adjX, self.adjY)\
-            .text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
-                  clean=True, fontPath=self.fontName, combine='a')
-
-    #Add weeping hole for 3D resin to drain while printing/cleaning
-    def addWeepingHole(self):
-        self.base = self.base.faces("<X[0]").workplane().moveTo(0,self.weepingHoleLocation)\
-            .circle(self.weepingHoleDiameter).extrude(-1*self.Xoutside, combine='s')
-
-    def mirrorBlock(self):
-        self.base = self.base('XY')
+        self.paddingX = 0.0
+        self.paddingY = 0.0
 
     def createBlockHelper(self):
         self.base = cq.Workplane("XY")
-        self.createBaseBlockBody()
-        self.hollowBaseBlockBody()
-        self.createFootFront()
-        self.createFootRear()
-        self.addText()
+        self.createText()
+        self.getBB()
+        self.addPadding()
+        self.addShoulder()
+        self.calculateBodyHeight()
+        self.createBody()
+        self.hollowBody()
+        self.createFeet()
         self.addWeepingHole()
-        self.mirroBlock()
+        self.addChamfer()
+        self.addVersion()
+        self.addSerialNumber()
+        #self.addTopFix()
+
+
+    def createText(self):
+        self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
+                    fontPath = self.fontName, clean=False, combine='a')
+
+    def getBB(self):
+        self.bbox = self.base.val().BoundingBox()
+
+    def addPadding(self):
+        if self.paddingX > 0.0:
+            self.bbox.xmin = self.bbox.xmin - (self.paddingX/2)
+            self.bbox.xmax = self.bbox.xmax + (self.paddingX/2)
+
+        if self.paddingY > 0.0:
+            self.bbox.ymin = self.bbox.ymin - (self.paddingY/2)
+            self.bbox.ymax = self.bbox.ymax + (self.paddingY/2)
+
+
+    def addShoulder(self):
+
+        #Find the max Z height and offset down by the font distance.
+        # Adding -0.1 fixes the strangeness, but leaves a gap
+        # Adding +0.1
+        offsetDistance = -1*(self.fontDistance) + -0.0
+
+        self.base = self.base.faces(">Z").workplane(offset = offsetDistance)\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
+        .extrude(-1 * self.neckHeight, combine=True, clean=True)
+
+        #show_object(self.base)
+
+
+    def calculateBodyHeight(self):
+        self.bodyHeight = self.totalHeight - self.fontDistance - self.neckHeight - self.feetHeight
+
+    def createBody(self):
+        offsetDistance = -1 * (self.neckHeight + self.fontDistance)
+
+        self.base = self.base.faces(">Z").workplane(offset= offsetDistance)\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
+        .extrude(-1 * self.bodyHeight)
+
+    def hollowBody(self):
+        self.base = self.base.faces("<Z")\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect( (self.bbox.xmax-self.bbox.xmin) * self.xRatio,\
+               (self.bbox.ymax-self.bbox.ymin) * self.yRatio)\
+        .extrude(-1 * self.bodyHeight, combine='cut')
+
+
+    def createFeet(self):
+        offsetDistance = -1 * (self.neckHeight + self.fontDistance + self.bodyHeight)
+
+        yLen = self.bbox.ylen
+        by = yLen * self.yRatio
+        cy = (yLen - by)/2.0
+
+        self.base = self.base.faces(">Z").workplane(offset = offsetDistance)\
+        .move(self.bbox.xmin, self.bbox.ymin)\
+        .rect(self.bbox.xlen+self.paddingX, cy, centered=False)\
+        .workplane(offset=-1*self.feetHeight)\
+        .move(self.bbox.xmin, self.bbox.ymin)\
+        .rect(self.bbox.xlen+self.paddingX, cy*self.feetLoftRatio, centered=False)\
+        .loft(combine=True)
+
+        self.base = self.base.faces(">Z").workplane(offset= offsetDistance)\
+        .move(self.bbox.xmin, self.bbox.ymax)\
+        .rect(self.bbox.xlen+self.paddingX, -1*cy, centered = False)\
+        .workplane(offset=-1*self.feetHeight)\
+        .move(self.bbox.xmin, self.bbox.ymax)\
+        .rect(self.bbox.xlen+self.paddingX, -1*cy*self.feetLoftRatio, centered=False)\
+        .loft(combine=True)
+
+    def addChamfer(self):
+        pass
+
+    def addWeepingHole(self):
+        #Get bounding box for X Face
+        xFacebbox = self.base.faces(">X").val().BoundingBox()
+
+        yDist = self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
+
+        self.base = self.base.faces(">X").workplane()\
+        .center(xFacebbox.center.y, yDist)\
+        .circle(self.weepingHoleDiameter)\
+        .extrude(-1*(self.bbox.xlen+self.paddingX), combine='cut')
+
+    def addVersion(self):
+        self.base = self.base.faces("<X").workplane(centerOption="CenterOfMass")\
+        .move(0, -1*self.bodyHeight)\
+        .text(self.version, self.totalHeight/8.0, self.versionTextEmboss, self.fontCut,\
+              fontPath = None, clean=True, combine='cut')
+
+    def addSerialNumber(self):
+        pass
+
+    def addTopFix(self):
+        self.base = self.base.faces("<Z[2]").workplane(centerOption="CenterOfMass")\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
+        .extrude(-1 * self.neckHeight, combine='a')
 
     #Export
     def exportAsSTL(self, stlName=None, path=None):
@@ -165,6 +218,11 @@ class blkLibrary:
     def setFontName(self, fontName):
         #Remove .ttf
         fontName = fontName.strip('.ttf')
+
+        #Replace spaces with nothing
+        fontName = fontName.replace(' ', '')
+
+        print(fontName)
 
         reFont = re.escape(fontName) + r'(-Regular|).ttf'
 

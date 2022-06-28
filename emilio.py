@@ -9,16 +9,16 @@ from letterLib import blkLibrary
 blk = blkLibrary()
 
 #Download Font from Google Fonts
-fontName = blk.getGoogleFont('Creepster')
+fontName = blk.getGoogleFont('Monoton')
 
 #Print actual name downloaded from Google Fonts
 print('Full Font Name: ' + fontName)
 
 #FontName can be 'Creepster' or 'Creepster.ttf' or 'Creepster-Regular.ttf'
-blk.setFontName('Creepster')
+blk.setFontName('Monoton')
 
 #Text to convert. One letter or emoji per block
-text = 'Spooky!'
+text = 'EMILIO'
 
 #Convert text to a list.
 blocks = list(text)

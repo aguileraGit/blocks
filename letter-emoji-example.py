@@ -22,18 +22,14 @@ text = '🧑‍🍼' #Is actually ['🧑', '\u200d', '🍼']
 blocks = list(text)
 print(blocks)
 
+#Change to Emoji Font
+blk.fontName = 'NotoEmoji-Regular.ttf'
+
 #Process list
 for letter in blocks:
 
     #Update letter
     blk.text = letter
-    blk.fontName = 'NotoEmoji-Regular.ttf'
-
-    blk.Xoutside = 7.0
-    blk.Youtside = 7.0
-
-    blk.adjX = -0.3
-    blk.adjY = 0.7
 
     #Create block
     blk.createBlockHelper()
