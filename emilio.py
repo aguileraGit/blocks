@@ -8,6 +8,9 @@ from letterLib import blkLibrary
 #Start library
 blk = blkLibrary()
 
+#Make font smaller
+blk.fontSize = 16
+
 #Download Font from Google Fonts
 fontName = blk.getGoogleFont('Monoton')
 
