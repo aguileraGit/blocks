@@ -39,3 +39,6 @@ With Google's new Font [https://fonts.google.com/noto/specimen/Noto+Emoji](Noto 
 - Add pillars for very large blocks
 - Look at https://github.com/michaelgale/cq-kit
 - Look at https://github.com/thearn/stl_tools
+- setFontName should accept a list
+- settings should be a dict-like. Or some easier standard way to pass settings
+- Fontname didn't work with name with hypen (name with two words)

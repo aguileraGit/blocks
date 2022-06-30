@@ -18,7 +18,7 @@ class blkLibrary:
 
         #Font information
         self.fontSize = 28
-        self.fontDistance = 1.0
+        self.fontDistance = 2.0
         self.fontCut = False
         self.fontCombine = True
         self.fontName = None
@@ -62,6 +62,9 @@ class blkLibrary:
     def createText(self):
         self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
                     fontPath = self.fontName, clean=False, combine='a')
+
+        #Mirror so you don't forget later on
+        self.base = self.base.mirror(mirrorPlane="ZY")
 
     def getBB(self):
         self.bbox = self.base.val().BoundingBox()
@@ -162,20 +165,53 @@ class blkLibrary:
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
         .extrude(-1 * self.neckHeight, combine='a')
 
-    #Export
-    def exportAsSTL(self, stlName=None, path=None):
+
+    #Export as STL. Filename format: blockText_0.stl. If filename exists, function
+    # will increase number. This is useful when looping through multiple blocks
+    # and the same letter is repeated. Loop for example would overwrite the 'o'
+    # file. When you print you would miss an 'o'.
+    def exportAsSTL(self, path=None):
         if path == None:
             path = '/'
         else:
             path = '/' + path + '/'
 
-        if stlName == None:
-            stlName = self.text + str('.stl')
-        else:
-            stlName = stlName + str('.stl')
+        #Format filename: blockText_0.stl
+        stlName = self.text + '_0' + str('.stl')
 
-        print(stlName)
+        #Check if file exists. If so, increase _#
+        fileNumber = self.findFileinDir(stlName)
+
+        #Update filename
+        newvalue = '_' + str(fileNumber+1)
+        stlName = stlName.replace('_0', newvalue)
+
         cq.exporters.export(self.base, stlName)
+
+
+    def findFileinDir(self, fileNameInQuestion):
+        #Replace _0 with re expression to find any number
+        fileNameInQuestion = fileNameInQuestion.replace('_0', '_(\d{1,})')
+
+        #Build re expression
+        txtPattern = re.compile(r'{}'.format(fileNameInQuestion))
+
+        largestValue = 0
+
+        #Search for pattern in directory
+        for file in os.listdir():
+            matches = re.search(txtPattern, file)
+
+            if matches:
+                latestValue = int( matches.group(1) )
+
+                #Update largestValue is needed
+                if latestValue > largestValue:
+                    largestValue = latestValue
+
+        #Return largest value
+        return largestValue
+
 
     def exportAsPart(self):
         return self.base
