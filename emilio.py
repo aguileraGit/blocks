@@ -31,3 +31,5 @@ for letter in blocks:
 
     #Export as STL
     blk.exportAsSTL()
+
+    print(blk.dimensions)

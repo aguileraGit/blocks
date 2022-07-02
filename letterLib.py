@@ -48,6 +48,8 @@ class blkLibrary:
             'xBlockLength': 0.0,
             'yBlockLength': 0.0,
             'zBlockHeight': 0.0,
+            'xCutOut': 0.0,
+            'yCutOut': 0.0,
             'xWallThickness': 0.0,
             'yWallThickness': 0.0
         }
@@ -131,6 +133,12 @@ class blkLibrary:
         .rect( xCutOut, yCutOut )\
         .extrude(-1 * self.bodyHeight, combine='cut')
 
+        self.dimensions['xCutOut'] = xCutOut
+        self.dimensions['yCutOut'] = yCutOut
+
+        self.dimensions['xWallThickness'] = (self.dimensions['xBlockLength'] - xCutOut)/2
+        self.dimensions['yWallThickness'] = (self.dimensions['yBlockLength'] - yCutOut)/2
+
 
     def createFeet(self):
         offsetDistance = -1 * (self.neckHeight + self.fontDistance + self.bodyHeight)
@@ -171,7 +179,7 @@ class blkLibrary:
 
     def addVersion(self):
         self.base = self.base.faces("<X").workplane(centerOption="CenterOfMass")\
-        .move(0, -1*self.bodyHeight)\
+        .center(0, -0.2*self.bodyHeight)\
         .text(self.version, self.totalHeight/8.0, self.versionTextEmboss, self.fontCut,\
               fontPath = None, clean=True, combine='cut')
 
