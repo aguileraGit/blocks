@@ -39,8 +39,18 @@ class blkLibrary:
 
         self.chamferSize = 1.0
 
+        #Add space so letters aren't right next to each other
         self.paddingX = 0.0
         self.paddingY = 0.0
+
+        #A dictionary of dimensions - Should move it to an object
+        self.dimensions = {
+            'xBlockLength': 0.0,
+            'yBlockLength': 0.0,
+            'zBlockHeight': 0.0,
+            'xWallThickness': 0.0,
+            'yWallThickness': 0.0
+        }
 
     def createBlockHelper(self):
         self.base = cq.Workplane("XY")
@@ -53,10 +63,9 @@ class blkLibrary:
         self.hollowBody()
         self.createFeet()
         self.addWeepingHole()
-        self.addChamfer()
+        self.addChamfer() #Need to be written
         self.addVersion()
-        self.addSerialNumber()
-        #self.addTopFix()
+        self.addSerialNumber() #Needs to be written
 
 
     def createText(self):
@@ -78,10 +87,14 @@ class blkLibrary:
             self.bbox.ymin = self.bbox.ymin - (self.paddingY/2)
             self.bbox.ymax = self.bbox.ymax + (self.paddingY/2)
 
+        #Update dimensions
+        self.dimensions['xBlockLength'] = self.bbox.xmax - self.bbox.xmin
+        self.dimensions['yBlockLength'] = self.bbox.ymax - self.bbox.ymin
+
 
     def addShoulder(self):
-
-        #Find the max Z height and offset down by the font distance.
+        #This issue only seems to affect the emoji font (NotoEmoji)
+        # Find the max Z height and offset down by the font distance.
         # Adding -0.1 fixes the strangeness, but leaves a gap
         # Adding +0.1
         offsetDistance = -1*(self.fontDistance) + -0.0
@@ -97,6 +110,9 @@ class blkLibrary:
     def calculateBodyHeight(self):
         self.bodyHeight = self.totalHeight - self.fontDistance - self.neckHeight - self.feetHeight
 
+        self.dimensions['zBlockHeight'] = self.totalHeight
+
+
     def createBody(self):
         offsetDistance = -1 * (self.neckHeight + self.fontDistance)
 
@@ -105,11 +121,14 @@ class blkLibrary:
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
         .extrude(-1 * self.bodyHeight)
 
+
     def hollowBody(self):
+        xCutOut = (self.bbox.xmax-self.bbox.xmin) * self.xRatio
+        yCutOut = (self.bbox.ymax-self.bbox.ymin) * self.yRatio
+
         self.base = self.base.faces("<Z")\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
-        .rect( (self.bbox.xmax-self.bbox.xmin) * self.xRatio,\
-               (self.bbox.ymax-self.bbox.ymin) * self.yRatio)\
+        .rect( xCutOut, yCutOut )\
         .extrude(-1 * self.bodyHeight, combine='cut')
 
 
@@ -158,12 +177,6 @@ class blkLibrary:
 
     def addSerialNumber(self):
         pass
-
-    def addTopFix(self):
-        self.base = self.base.faces("<Z[2]").workplane(centerOption="CenterOfMass")\
-        .moveTo(self.bbox.center.x, self.bbox.center.y)\
-        .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
-        .extrude(-1 * self.neckHeight, combine='a')
 
 
     #Export as STL. Filename format: blockText_0.stl. If filename exists, function
@@ -216,6 +229,12 @@ class blkLibrary:
     def exportAsPart(self):
         return self.base
 
+    #Downloads and uses Google Font
+    def useGoogleFont(self, fontName):
+        self.getGoogleFont(fontName)
+        self.setFontName(fontName)
+
+    #Only downloads the Google Font. Still need to call setFontName to use font
     def getGoogleFont(self, fontName):
         #Need to check if font exisits in folder
 

@@ -12,13 +12,7 @@ blk = blkLibrary()
 blk.fontSize = 16
 
 #Download Font from Google Fonts
-fontName = blk.getGoogleFont('Monoton')
-
-#Print actual name downloaded from Google Fonts
-print('Full Font Name: ' + fontName)
-
-#FontName can be 'Creepster' or 'Creepster.ttf' or 'Creepster-Regular.ttf'
-blk.setFontName('Monoton')
+fontName = blk.useGoogleFont('Monoton')
 
 #Text to convert. One letter or emoji per block
 text = 'EMILIO'
