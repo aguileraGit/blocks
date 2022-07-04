@@ -1,7 +1,7 @@
 
 class blkLibrary:
 
-    def __init__(self, support=None):
+    def __init__(self):
 
         self.version = "v0.2"
         self.versionTextSize = 20.0
@@ -38,13 +38,9 @@ class blkLibrary:
         
         self.supportWidth = 0
         self.support = None
-        if support == 'center':
-            self.support = 'center'
-        elif support == 'cross':
-            self.support = 'cross'
 
         
-    def createBlockHelper(self):
+    def createBlockHelper(self, support=None):
         self.base = cq.Workplane("XY")
         self.createText()
         self.getBB()
@@ -55,10 +51,8 @@ class blkLibrary:
         self.hollowBody()
         self.createFeet()
         
-        if self.support == 'center':
+        if support == 'center':
             self.addCenterSupport()
-        elif self.support == 'cross':
-            self.addCrossSupport()
             
         self.addWeepingHole()
         self.addChamfer()
@@ -94,7 +88,7 @@ class blkLibrary:
         #Find the max Z height and offset down by the font distance.
         # Adding -0.1 fixes the strangeness, but leaves a gap
         # Adding +0.1 
-        offsetDistance = -1*(self.fontDistance) + -0.2
+        offsetDistance = -1*(self.fontDistance) + -0.0
         
         self.base = self.base.faces(">Z").workplane(offset = offsetDistance)\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
@@ -178,19 +172,16 @@ class blkLibrary:
         
     def addCenterSupport(self):
         centerSupportWidth = (self.bbox.ymax-self.bbox.ymin) * self.yRatio
-        
-        self.base = self.base.faces(">Z[1]").workplane(centerOption="CenterOfMass")\
+
+        self.base = self.base.faces(">Z[2]").workplane(centerOption="CenterOfMass")\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
         .rect(self.supportWidth, centerSupportWidth )\
-        .extrude(-1* self.bodyHeight)
-        
-    def addCrossSupport(self):
-        pass
+        .extrude(1* self.bodyHeight)
+
 
         
 #Start library
-blk = blkLibrary(support='center')
-blk.supportWidth = 1.0
+blk = blkLibrary()
 
 blk.text = 'r'
 
@@ -205,7 +196,8 @@ blk.fontName = 'Bangers-Regular.ttf'
 #blk.fontName = 'NotoEmoji-Regular.ttf'
 
 #Create block
-blk.createBlockHelper()
+blk.supportWidth = 1.0
+blk.createBlockHelper(support='center')
 
 #Update object
 show_object(blk.base)

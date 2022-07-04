@@ -27,7 +27,8 @@ for letter in blocks:
     blk.text = letter
 
     #Create block
-    blk.createBlockHelper()
+    blk.supportWidth = 2.0
+    blk.createBlockHelper(support='center')
 
     #Export as STL
     blk.exportAsSTL()

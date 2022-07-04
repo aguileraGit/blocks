@@ -54,7 +54,11 @@ class blkLibrary:
             'yWallThickness': 0.0
         }
 
-    def createBlockHelper(self):
+        self.supportWidth = 0
+        self.support = None
+
+
+    def createBlockHelper(self, support=None):
         self.base = cq.Workplane("XY")
         self.createText()
         self.getBB()
@@ -64,6 +68,11 @@ class blkLibrary:
         self.createBody()
         self.hollowBody()
         self.createFeet()
+
+        self.support = support
+        if self.support == 'center':
+            self.addCenterSupport()
+
         self.addWeepingHole()
         self.addChamfer() #Need to be written
         self.addVersion()
@@ -140,6 +149,18 @@ class blkLibrary:
         self.dimensions['yWallThickness'] = (self.dimensions['yBlockLength'] - yCutOut)/2
 
 
+    #To help support larger blocks, add a support (rectangle or cross)
+    def addCenterSupport(self):
+        centerSupportWidth = (self.bbox.ymax-self.bbox.ymin) * self.yRatio
+
+        #debug(self.base.faces(">Z[2]") )
+
+        self.base = self.base.faces(">Z[2]").workplane()\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.supportWidth, centerSupportWidth )\
+        .extrude(self.bodyHeight)
+
+
     def createFeet(self):
         offsetDistance = -1 * (self.neckHeight + self.fontDistance + self.bodyHeight)
 
@@ -173,7 +194,7 @@ class blkLibrary:
         yDist = self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
 
         self.base = self.base.faces(">X").workplane()\
-        .center(xFacebbox.center.y, yDist)\
+        .center(xFacebbox.center.y, self.bodyHeight - self.weepingHoleDiameter)\
         .circle(self.weepingHoleDiameter)\
         .extrude(-1*(self.bbox.xlen+self.paddingX), combine='cut')
 
