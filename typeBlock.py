@@ -1,7 +1,7 @@
 
 class blkLibrary:
 
-    def __init__(self):
+    def __init__(self, support=None):
 
         self.version = "v0.2"
         self.versionTextSize = 20.0
@@ -36,6 +36,14 @@ class blkLibrary:
         self.paddingX = 0.0
         self.paddingY = 0.0
         
+        self.supportWidth = 0
+        self.support = None
+        if support == 'center':
+            self.support = 'center'
+        elif support == 'cross':
+            self.support = 'cross'
+
+        
     def createBlockHelper(self):
         self.base = cq.Workplane("XY")
         self.createText()
@@ -46,16 +54,26 @@ class blkLibrary:
         self.createBody()
         self.hollowBody()
         self.createFeet()
+        
+        if self.support == 'center':
+            self.addCenterSupport()
+        elif self.support == 'cross':
+            self.addCrossSupport()
+            
         self.addWeepingHole()
         self.addChamfer()
         self.addVersion()
         self.addSerialNumber()
         #self.addTopFix()
+        #self.mirrorBlock()
+
         
         
     def createText(self):
         self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
                     fontPath = self.fontName, clean=False, combine='a')
+            
+        self.base = self.base.mirror(mirrorPlane="ZY")
 
     def getBB(self):
         self.bbox = self.base.val().BoundingBox()
@@ -76,12 +94,12 @@ class blkLibrary:
         #Find the max Z height and offset down by the font distance.
         # Adding -0.1 fixes the strangeness, but leaves a gap
         # Adding +0.1 
-        offsetDistance = -1*(self.fontDistance) + 0.0
+        offsetDistance = -1*(self.fontDistance) + -0.2
         
         self.base = self.base.faces(">Z").workplane(offset = offsetDistance)\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
-        .extrude(-1 * self.neckHeight, combine='a', clean=True)
+        .extrude(-1 * self.neckHeight, combine=True, clean=True)
         
         #show_object(self.base)
 
@@ -139,7 +157,7 @@ class blkLibrary:
         yDist = self.feetHeight + self.bodyHeight + -1*self.weepingHoleDiameter
         
         self.base = self.base.faces(">X").workplane()\
-        .center(xFacebbox.center.y, yDist)\
+        .center(xFacebbox.center.y, self.bodyHeight - self.weepingHoleDiameter)\
         .circle(self.weepingHoleDiameter)\
         .extrude(-1*(self.bbox.xlen+self.paddingX), combine='cut')
     
@@ -158,23 +176,55 @@ class blkLibrary:
         .rect(self.bbox.xmax-self.bbox.xmin, self.bbox.ymax-self.bbox.ymin)\
         .extrude(-1 * self.neckHeight, combine='a')
         
+    def addCenterSupport(self):
+        centerSupportWidth = (self.bbox.ymax-self.bbox.ymin) * self.yRatio
         
+        self.base = self.base.faces(">Z[1]").workplane(centerOption="CenterOfMass")\
+        .moveTo(self.bbox.center.x, self.bbox.center.y)\
+        .rect(self.supportWidth, centerSupportWidth )\
+        .extrude(-1* self.bodyHeight)
+        
+    def addCrossSupport(self):
+        pass
+
         
 #Start library
-blk = blkLibrary()
+blk = blkLibrary(support='center')
+blk.supportWidth = 1.0
 
-blk.text = '😤'
+blk.text = 'r'
 
 blk.neckHeight = 3.0
-blk.fontDistance = 1.0
+blk.fontDistance = 2.0
 #blk.paddingX = 4.0
 #blk.paddingY = 2.0
 #blk.fontName = 'PressStart2P-Regular.ttf'
 #blk.fontName = 'OleoScript-Regular.ttf'
-blk.fontName = 'NotoEmoji-Regular.ttf'
+#blk.fontName = 'Creepster-Regular.ttf'
+blk.fontName = 'Bangers-Regular.ttf'
+#blk.fontName = 'NotoEmoji-Regular.ttf'
 
 #Create block
 blk.createBlockHelper()
 
 #Update object
 show_object(blk.base)
+
+'''
+fontDepth = 2.0
+
+base = cq.Workplane("XY")
+
+base = base.text('💩', 12, fontDepth, fontPath = 'NotoEmoji-Regular.ttf')
+
+bbox = base.val().BoundingBox()
+
+offsetDistance = -1*(fontDepth) - 0.0
+
+base = base.faces(">Z").workplane(offset=offsetDistance)\
+    .moveTo(bbox.center.x, bbox.center.y)\
+    .rect(bbox.xmax-bbox.xmin, bbox.ymax-bbox.ymin)\
+    .extrude(-1 * 4.0)
+
+show_object(base)
+'''
