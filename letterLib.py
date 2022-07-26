@@ -260,18 +260,19 @@ class blkLibrary:
         return self.base
 
     #Downloads and uses Google Font
-    def useGoogleFont(self, fontName):
-        self.getGoogleFont(fontName)
-        self.setFontName(fontName)
+    def useGoogleFont(self, fontName, path=None):
+        self.getGoogleFont(fontName, path)
+        self.setFontName(fontName, path)
 
     #Only downloads the Google Font. Still need to call setFontName to use font
     def getGoogleFont(self, fontName, path=None):
-
-        if path != None:
-            os.chdir(path)
-
         #Need to check if font exisits in folder
         zipFileName = fontName.replace(' ', '-') + '.zip'
+
+        if path == None:
+            path = zipFileName
+        else:
+            path = os.path.join(os.getcwd(), path, zipFileName)
 
         #Replace spaces with %20
         fontNameDownload = fontName.replace(' ', '%20')
@@ -283,16 +284,19 @@ class blkLibrary:
         r = requests.get(url, allow_redirects=True)
 
         #Write to the folder
-        open(zipFileName, 'wb').write(r.content)
+        open(path, 'wb').write(r.content)
 
         #Open zip file
         fileFound = False
-        with zipfile.ZipFile(zipFileName, mode="r") as archive:
+        with zipfile.ZipFile(path, mode="r") as archive:
             for filename in archive.namelist():
                 #Look for actual font
                 if filename[-4:] == '.ttf':
+                    #Remove zipFileName from path and append filename
+                    saveFilePath = path.rsplit('/', 1)[0] + '/'
+
                     #Save font to directory
-                    archive.extract(filename)
+                    archive.extract(filename, saveFilePath)
 
                     fileFound = True
                     return filename
@@ -303,7 +307,12 @@ class blkLibrary:
 
     #Should break this down into 2 parts. One to search directory.
     # Two. If found, set fontName.
-    def setFontName(self, fontName):
+    def setFontName(self, fontName, path=None):
+        if path == None:
+            path = '.'
+        else:
+            path = os.path.join(os.getcwd(), path)
+
         #Remove .ttf
         fontName = fontName.strip('.ttf')
 
@@ -315,7 +324,7 @@ class blkLibrary:
         reFont = re.escape(fontName) + r'(-Regular|).ttf'
 
         #Find all files that match
-        fontName = list(filter(re.compile(reFont).match, os.listdir()))
+        fontName = list(filter(re.compile(reFont).match, os.listdir(path)))
 
         #Assert if font isn't found
         assert len(fontName) > 0, f'Font not found'
@@ -323,4 +332,4 @@ class blkLibrary:
         #Assert if multiple fonts match
         assert len(fontName) == 1, f'Multiple fonts found'
 
-        self.fontName = fontName[0]
+        self.fontName = path + fontName[0]
