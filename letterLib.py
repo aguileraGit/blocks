@@ -80,6 +80,7 @@ class blkLibrary:
 
 
     def createText(self):
+        #Need to assert if no letter is present or too many letters are present
         self.base = self.base.text(self.text, self.fontSize, self.fontDistance, self.fontCut,\
                     fontPath = self.fontName, clean=False, combine='a')
 
@@ -136,6 +137,8 @@ class blkLibrary:
     def hollowBody(self):
         xCutOut = (self.bbox.xmax-self.bbox.xmin) * self.xRatio
         yCutOut = (self.bbox.ymax-self.bbox.ymin) * self.yRatio
+
+        #Assert if xCutOut or yCutOut are zero or negative
 
         self.base = self.base.faces("<Z")\
         .moveTo(self.bbox.center.x, self.bbox.center.y)\
@@ -214,21 +217,19 @@ class blkLibrary:
     # file. When you print you would miss an 'o'.
     def exportAsSTL(self, path=None):
         if path == None:
-            path = '/'
+            #Format filename: blockText_0.stl
+            stlName = self.text + '_0' + str('.stl')
+
+            #Check if file exists. If so, increase _#
+            fileNumber = self.findFileinDir(stlName)
+
+            #Update filename
+            newvalue = '_' + str(fileNumber+1)
+            stlName = stlName.replace('_0', newvalue)
+
+            cq.exporters.export(self.base, stlName)
         else:
-            path = '/' + path + '/'
-
-        #Format filename: blockText_0.stl
-        stlName = self.text + '_0' + str('.stl')
-
-        #Check if file exists. If so, increase _#
-        fileNumber = self.findFileinDir(stlName)
-
-        #Update filename
-        newvalue = '_' + str(fileNumber+1)
-        stlName = stlName.replace('_0', newvalue)
-
-        cq.exporters.export(self.base, stlName)
+            cq.exporters.export(self.base, path)
 
 
     def findFileinDir(self, fileNameInQuestion):
@@ -264,9 +265,12 @@ class blkLibrary:
         self.setFontName(fontName)
 
     #Only downloads the Google Font. Still need to call setFontName to use font
-    def getGoogleFont(self, fontName):
-        #Need to check if font exisits in folder
+    def getGoogleFont(self, fontName, path=None):
 
+        if path != None:
+            os.chdir(path)
+
+        #Need to check if font exisits in folder
         zipFileName = fontName.replace(' ', '-') + '.zip'
 
         #Replace spaces with %20
